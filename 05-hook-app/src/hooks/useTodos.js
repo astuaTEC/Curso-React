@@ -5,7 +5,7 @@ const init = () => {
     return JSON.parse(localStorage.getItem('todos')) || [];
 }
 
-export const useTodo = () => {
+export const useTodos = () => {
 
     const [todos, dispatch] = useReducer(todoReducer, [], init);
 
@@ -36,8 +36,6 @@ export const useTodo = () => {
             payload: id
         });
     }
-
-    const pendingTodosCount = todos.filter(todo => !todo.done).length
 
     return {
         todos,
