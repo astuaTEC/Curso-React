@@ -7,7 +7,7 @@ export const LoginPage = () => {
 
     const onLogin = () => {
         navigate('/', {
-            raplace: true
+            replace: true
         })
     }
 
