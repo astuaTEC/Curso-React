@@ -1,76 +1,72 @@
 import { Calendar } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-import { addHours } from 'date-fns';
-import { CalendarEvent, Navbar } from '../'
+import { CalendarEvent, CalendarModal, FabAddNew, FabDelete, Navbar } from '../'
 import { localizer, getMessagesES } from '../../helpers';
 import { useState } from 'react';
+import { useCalendarStore, useUiStore } from '../../hooks';
 
-
-const events = [{
-  title: 'Ejercicio de react',
-  notes: 'Hay que comprar el pan',
-  start: new Date(),
-  end: addHours( new Date(), 2 ),
-  bgColor: '#fafafa',
-  user: {
-    _id: '123',
-    name: 'Saymon'
-  }
-}]
 
 export const CalendarPage = () => {
 
-  const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'week');
+	const { events, setActiveEvent } = useCalendarStore();
 
-  const eventStyleGetter = ( event, start, end, isSelected ) => {
+	const { openDateModal } = useUiStore();
 
-    const style = {
-      backgroundColor: '#347CF7',
-      borderRadius: '0px',
-      opacity: 0.8,
-      color: 'white'
-    }
+	const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'week');
 
-    return {
-      style
-    }
-  }
+	const eventStyleGetter = (event, start, end, isSelected) => {
 
-  const onDoubleClick = ( event ) => {
+		const style = {
+			backgroundColor: '#347CF7',
+			borderRadius: '0px',
+			opacity: 0.8,
+			color: 'white'
+		}
 
-  }
+		return {
+			style
+		}
+	}
 
-  const onSelect = ( event ) => {
-    
-  }
+	const onDoubleClick = (event) => {
+		openDateModal();
+	}
 
-  const onViewChanged = ( event ) => {
-    localStorage.setItem('lastView', event);
-    setLastView(event);
-  }
+	const onSelect = (event) => {
+		setActiveEvent( event );
+	}
 
-  return (
-    <>
-      <Navbar />
+	const onViewChanged = (event) => {
+		localStorage.setItem('lastView', event);
+		setLastView(event);
+	}
 
-      <Calendar
-        culture='es'
-        localizer={localizer}
-        events={events}
-        defaultView={ lastView }
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 'calc( 100vh - 80px)' }}
-        messages={ getMessagesES() }
-        eventPropGetter={ eventStyleGetter }
-        components={{
-          event: CalendarEvent
-        }}
-        onDoubleClickEvent={ onDoubleClick }
-        onSelectEvent={ onSelect }
-        onView={ onViewChanged }
-      />
-    </>
-  )
+	return (
+		<>
+			<Navbar />
+
+			<Calendar
+				culture='es'
+				localizer={localizer}
+				events={events}
+				defaultView={lastView}
+				startAccessor="start"
+				endAccessor="end"
+				style={{ height: 'calc( 100vh - 80px)' }}
+				messages={getMessagesES()}
+				eventPropGetter={eventStyleGetter}
+				components={{
+					event: CalendarEvent
+				}}
+				onDoubleClickEvent={onDoubleClick}
+				onSelectEvent={onSelect}
+				onView={onViewChanged}
+			/>
+
+			<CalendarModal />
+			<FabAddNew />
+			<FabDelete />
+		</>
+	)
 }
