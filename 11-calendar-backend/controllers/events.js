@@ -5,11 +5,11 @@ const Evento = require("../models/Evento");
 
 const getEventos = async( req, res = response) => {
 
-    const evetos = await Evento.find().populate('user', 'name');
+    const eventos = await Evento.find().populate('user', 'name');
 
     return res.json({
         ok: true,
-        evetos
+        eventos
     })
 }
 
