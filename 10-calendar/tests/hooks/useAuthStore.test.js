@@ -21,7 +21,7 @@ const getMockStore = (initialState) => {
 
 describe('Pruebas en useAuthStore', () => {
 
-    beforeEach(() => localStorage.clear() );
+    beforeEach(() => localStorage.clear());
 
     test('debe de regresar los valores por defecto', () => {
 
@@ -89,16 +89,16 @@ describe('Pruebas en useAuthStore', () => {
         );
     })
 
-    test('startRegister debe de crear un usuario', async() => {
+    test('startRegister debe de crear un usuario', async () => {
 
-        const newUser = { email: 'algo@google.com', password: '544512', name:' Test User 2' };
+        const newUser = { email: 'algo@google.com', password: '544512', name: ' Test User 2' };
         const mockStore = getMockStore({ ...notAuthenticatedState });
 
         const { result } = renderHook(() => useAuthStore(), {
             wrapper: ({ children }) => <Provider store={mockStore}>{children}</Provider>
         });
-        
-        const spy = jest.spyOn( calendarApi, 'post' ).mockReturnValue({
+
+        const spy = jest.spyOn(calendarApi, 'post').mockReturnValue({
             data: {
                 ok: true,
                 uid: "141086498409",
@@ -113,13 +113,78 @@ describe('Pruebas en useAuthStore', () => {
 
         const { errorMessage, status, user } = result.current;
 
-        expect( { errorMessage, status, user } ).toEqual({
+        expect({ errorMessage, status, user }).toEqual({
             errorMessage: undefined,
             status: 'authenticated',
-            user: { name: 'Test User', uid: '141086498409'}
+            user: { name: 'Test User', uid: '141086498409' }
         })
 
         spy.mockRestore();
 
+    })
+
+    test('startRegister debe de fallar la creacion', async () => {
+
+        const mockStore = getMockStore({ ...notAuthenticatedState });
+
+        const { result } = renderHook(() => useAuthStore(), {
+            wrapper: ({ children }) => <Provider store={mockStore}>{children}</Provider>
+        });
+
+        await act(async () => {
+            await result.current.startRegister(testUserCredentials);
+        });
+
+        const { errorMessage, status, user } = result.current;
+
+        expect({ errorMessage, status, user }).toEqual({
+            errorMessage: "Un usuario ya existe con ese email",
+            status: "not-authenticated",
+            user: {},
+        });
+    })
+
+    test('checkAuthToken debe fallar si no hay token', async () => {
+
+        const mockStore = getMockStore({ ...initialState });
+
+        const { result } = renderHook(() => useAuthStore(), {
+            wrapper: ({ children }) => <Provider store={mockStore}>{children}</Provider>
+        });
+
+        await act(async () => {
+            await result.current.checkAuthToken();
+        });
+
+        const { errorMessage, status, user } = result.current;
+        expect({ errorMessage, status, user }).toEqual({
+            errorMessage: undefined,
+            status: 'not-authenticated',
+            user: {}
+        })
+    });
+
+    test('checkAuthToken debe de autenticar el usuario si hay token', async () => {
+
+        const { data } = await calendarApi.post('/auth', testUserCredentials);
+        localStorage.setItem('token', data.token);
+
+        const mockStore = getMockStore({ ...initialState });
+
+        const { result } = renderHook(() => useAuthStore(), {
+            wrapper: ({ children }) => <Provider store={mockStore}>{children}</Provider>
+        });
+
+        await act(async () => {
+            await result.current.checkAuthToken();
+        });
+
+        const { errorMessage, status, user } = result.current;
+
+        expect({ errorMessage, status, user }).toEqual({
+            errorMessage: undefined,
+            status: 'authenticated',
+            user: { name: 'Test User', uid: '63e2d6391873a666f58ce316' }
+        })
     })
 })
